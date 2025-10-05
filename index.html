@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PlayCard System</title>
+    <link rel="stylesheet" href="assets/styles.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">🎮</div>
+        <div class="titles">
+          <h1>PlayCard System</h1>
+          <p class="subtitle">Scan • Manage • Recharge</p>
+        </div>
+      </div>
+      <div class="connection">
+        <label for="backendUrl">Backend URL</label>
+        <input id="backendUrl" type="url" placeholder="https://api.example.com" />
+        <button id="saveBackendBtn" class="btn">Save</button>
+        <span id="connStatus" class="badge" aria-live="polite">Disconnected</span>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="panel status-panel" aria-labelledby="scanStatusTitle">
+        <div class="panel-header">
+          <h2 id="scanStatusTitle">Scan Status</h2>
+          <div class="ws-controls">
+            <button id="connectWsBtn" class="btn btn-secondary">Connect Live</button>
+            <button id="disconnectWsBtn" class="btn btn-ghost" disabled>Disconnect</button>
+          </div>
+        </div>
+        <div id="scanStatus" class="scan-status" aria-live="polite">
+          Waiting for card scan...
+        </div>
+      </section>
+
+      <section class="grid">
+        <div class="panel" aria-labelledby="cardDetailsTitle">
+          <h2 id="cardDetailsTitle">Card Details</h2>
+          <div id="cardDetails" class="details">
+            <div class="detail-row"><span>Card ID</span><strong id="cardId">—</strong></div>
+            <div class="detail-row"><span>Player</span><strong id="playerName">—</strong></div>
+            <div class="detail-row"><span>Balance</span><strong id="balance">—</strong></div>
+            <div class="detail-row"><span>Status</span><strong id="cardState" class="state">—</strong></div>
+          </div>
+        </div>
+
+        <div class="panel" aria-labelledby="actionsTitle">
+          <h2 id="actionsTitle">Actions</h2>
+          <form id="rechargeForm" class="form">
+            <div class="field">
+              <label for="rechargeAmount">Recharge Amount</label>
+              <input id="rechargeAmount" type="number" min="1" step="1" placeholder="100" required />
+            </div>
+            <button class="btn" type="submit">Recharge</button>
+          </form>
+
+          <form id="deductForm" class="form">
+            <div class="field">
+              <label for="deductAmount">Deduct Amount</label>
+              <input id="deductAmount" type="number" min="1" step="1" placeholder="20" required />
+            </div>
+            <button class="btn btn-danger" type="submit">Deduct</button>
+          </form>
+        </div>
+
+        <div class="panel" aria-labelledby="playerTitle">
+          <h2 id="playerTitle">Player</h2>
+          <form id="playerForm" class="form">
+            <div class="field">
+              <label for="playerNameInput">Player Name</label>
+              <input id="playerNameInput" type="text" placeholder="Alex Doe" required />
+            </div>
+            <div class="field">
+              <label for="playerPhoneInput">Phone</label>
+              <input id="playerPhoneInput" type="tel" placeholder="99999 99999" />
+            </div>
+            <div class="field">
+              <label for="playerNotesInput">Notes</label>
+              <textarea id="playerNotesInput" rows="2" placeholder="VIP, birthday, etc."></textarea>
+            </div>
+            <button class="btn btn-secondary" type="submit">Save Player</button>
+          </form>
+        </div>
+
+        <div class="panel" aria-labelledby="historyTitle">
+          <h2 id="historyTitle">Recent Activity</h2>
+          <ul id="historyList" class="history" aria-live="polite"></ul>
+        </div>
+      </section>
+    </main>
+
+    <template id="historyItemTemplate">
+      <li class="history-item">
+        <div class="left">
+          <div class="title"></div>
+          <div class="meta"></div>
+        </div>
+        <div class="amount"></div>
+      </li>
+    </template>
+
+    <footer class="app-footer">
+      <span>ESP32 + RFID + LCD</span>
+      <span>Frontend v1.0</span>
+    </footer>
+
+    <script src="assets/api.js"></script>
+    <script src="assets/ws.js"></script>
+    <script src="assets/app.js"></script>
+  </body>
+  </html>
+
+
