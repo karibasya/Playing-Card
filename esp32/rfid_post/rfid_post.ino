@@ -112,9 +112,10 @@ void loop() {
       if (!error) {
         String cardId = doc["id"] | uid;
         String playerName = doc["player"]["name"] | "Unknown";
+        String playerPhone = doc["player"]["phone"] | "";
         int balance = doc["balance"] | 0;
         
-        // Display on LCD
+        // Screen 1: Name + Balance
         lcd.clear();
         lcd.setCursor(0, 0);
         if (playerName != "Unknown" && playerName != "") {
@@ -124,8 +125,25 @@ void loop() {
         }
         lcd.setCursor(0, 1);
         lcd.print("Bal: Rs." + String(balance));
+        delay(2500);
         
-        Serial.printf("Player: %s, Balance: %d\n", playerName.c_str(), balance);
+        // Screen 2: Name + Phone
+        lcd.clear();
+        lcd.setCursor(0, 0);
+        if (playerName != "Unknown" && playerName != "") {
+          lcd.print(playerName.substring(0, 16));
+        } else {
+          lcd.print("ID:" + cardId.substring(0, 13));
+        }
+        lcd.setCursor(0, 1);
+        if (playerPhone != "" && playerPhone != "0") {
+          lcd.print("Ph: " + playerPhone.substring(0, 12));
+        } else {
+          lcd.print("Ph: Not set");
+        }
+        delay(2500);
+        
+        Serial.printf("Player: %s, Phone: %s, Balance: %d\n", playerName.c_str(), playerPhone.c_str(), balance);
       } else {
         lcd.clear();
         lcd.setCursor(0, 0);
@@ -140,7 +158,7 @@ void loop() {
     }
     http.end();
     
-    delay(3000); // Show details for 3 seconds
+    // Return to scan prompt
     lcd.clear();
     lcd.setCursor(0, 0);
     lcd.print("Scan Your Card");
