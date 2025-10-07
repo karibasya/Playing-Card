@@ -42,11 +42,11 @@ export function RFIDLive({ apiBase = defaultApiBase }: Props) {
   useEffect(() => {
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
-    ws.onmessage = (evt) => {
+    ws.onmessage = (evt: MessageEvent) => {
       try {
         const msg = JSON.parse(evt.data);
         if (msg?.type === 'scan' && msg.data) {
-          setScans((prev) => [msg.data as Scan, ...prev].slice(0, 100));
+          setScans((prev: Scan[]) => [msg.data as Scan, ...prev].slice(0, 100));
         }
       } catch {
         // ignore
@@ -74,7 +74,7 @@ export function RFIDLive({ apiBase = defaultApiBase }: Props) {
           </tr>
         </thead>
         <tbody>
-          {scans.map((s) => (
+          {scans.map((s: Scan) => (
             <tr key={s.id}>
               <td style={{ borderBottom: '1px solid #f0f0f0', padding: '8px' }}>{new Date(s.timestamp).toLocaleString()}</td>
               <td style={{ borderBottom: '1px solid #f0f0f0', padding: '8px', fontFamily: 'monospace' }}>{s.uid}</td>

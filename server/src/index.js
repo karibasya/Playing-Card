@@ -126,12 +126,11 @@ server.on('upgrade', (req, socket, head) => {
 wss.on('connection', (ws) => {
   clients.add(ws);
   ws.on('close', () => clients.delete(ws));
-  ws.on('message', (msg) => {
-    // optional: accept device messages and re-broadcast
+  ws.on('message', async (msg) => {
     try {
       const data = JSON.parse(String(msg));
       if (data && data.type === 'scan' && data.data?.cardId) {
-        ensureCard(data.data.cardId);
+        await getOrCreateCard(data.data.cardId);
         broadcast({ type: 'scan', data: { cardId: data.data.cardId } });
       }
     } catch (_) {}
