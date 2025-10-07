@@ -23,8 +23,6 @@
     // forms
     rechargeForm: document.getElementById("rechargeForm"),
     rechargeAmount: document.getElementById("rechargeAmount"),
-    deductForm: document.getElementById("deductForm"),
-    deductAmount: document.getElementById("deductAmount"),
     playerForm: document.getElementById("playerForm"),
     playerNameInput: document.getElementById("playerNameInput"),
     playerPhoneInput: document.getElementById("playerPhoneInput"),
@@ -143,19 +141,6 @@
     } catch (err) { alert(err.message || "Recharge failed"); }
   });
 
-  els.deductForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    if (!currentCardId) return alert("Scan a card first.");
-    const amount = parseInt(els.deductAmount.value, 10);
-    if (!Number.isFinite(amount) || amount <= 0) return alert("Enter a valid amount.");
-    try {
-      await window.PlayCardAPI.deduct(currentCardId, amount);
-      addHistory({ title: "Deduct", meta: new Date().toLocaleString(), amount: `-₹ ${amount}` });
-      await loadCard(currentCardId);
-      els.deductAmount.value = "";
-    } catch (err) { alert(err.message || "Deduct failed"); }
-  });
-
   els.playerForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     if (!currentCardId) return alert("Scan a card first.");
@@ -183,6 +168,11 @@
 
   els.connectWsBtn.addEventListener("click", connectWebSocket);
   els.disconnectWsBtn.addEventListener("click", disconnectWebSocket);
+
+  // Admin button
+  document.getElementById("adminBtn").addEventListener("click", () => {
+    window.open("admin-login.html", "_blank");
+  });
 
   // Init
   (function init() {

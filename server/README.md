@@ -32,9 +32,9 @@ Server starts at `http://localhost:4000`. WS at `ws://localhost:4000/ws`.
 - GET `/cards/:cardId`
 - GET `/cards/:cardId/history`
 - POST `/cards/:cardId/recharge` { amount }
-- POST `/cards/:cardId/deduct` { amount }
 - PUT `/cards/:cardId/player` { name, phone, notes }
 - POST `/esp/scan` { cardId }  (from ESP32)
+- GET `/admin/search?type={id|name|phone}&query={searchTerm}` (Admin search)
 
 ## Test quickly
 ```bash

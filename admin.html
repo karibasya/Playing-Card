@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard - PlayCard System</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+  <style>
+    .admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--outline);
+      background: rgba(15,18,32,0.8);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .search-section {
+      margin-bottom: 20px;
+    }
+    .search-box {
+      display: flex;
+      gap: 12px;
+      align-items: flex-end;
+    }
+    .search-box .field {
+      flex: 1;
+    }
+    .results-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+    }
+    .results-table th,
+    .results-table td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--outline);
+    }
+    .results-table th {
+      background: rgba(91,140,255,0.1);
+      color: var(--primary);
+      font-weight: 600;
+    }
+    .results-table tr:hover {
+      background: rgba(255,255,255,0.02);
+    }
+    .no-results {
+      text-align: center;
+      padding: 40px;
+      color: var(--muted);
+    }
+    .card-detail-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 100;
+      padding: 20px;
+      overflow-y: auto;
+    }
+    .modal-content {
+      max-width: 600px;
+      margin: 40px auto;
+      background: linear-gradient(180deg, var(--panel), var(--panel-2));
+      border: 1px solid var(--outline);
+      border-radius: 14px;
+      padding: 24px;
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .close-btn {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-size: 24px;
+      cursor: pointer;
+      padding: 0;
+      width: 32px;
+      height: 32px;
+    }
+    .history-timeline {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+  </style>
+</head>
+<body>
+  <header class="admin-header">
+    <div class="brand">
+      <div class="logo" aria-hidden="true">⚙️</div>
+      <div class="titles">
+        <h1>Admin Dashboard</h1>
+        <p class="subtitle" id="adminUsername"></p>
+      </div>
+    </div>
+    <div>
+      <button id="logoutBtn" class="btn btn-ghost">Logout</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="panel search-section">
+      <h2>Search Players & Cards</h2>
+      <div class="search-box">
+        <div class="field">
+          <label for="searchType">Search By</label>
+          <select id="searchType" style="width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--outline); background: var(--panel); color: var(--text);">
+            <option value="id">Card ID</option>
+            <option value="name">Player Name</option>
+            <option value="phone">Phone Number</option>
+          </select>
+        </div>
+        <div class="field" style="flex: 2;">
+          <label for="searchQuery">Search Query</label>
+          <input id="searchQuery" type="text" placeholder="Enter search term..." />
+        </div>
+        <button id="searchBtn" class="btn" style="height: 40px;">Search</button>
+        <button id="clearBtn" class="btn btn-secondary" style="height: 40px;">Clear</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Results (<span id="resultCount">0</span>)</h2>
+      <div id="resultsContainer">
+        <div class="no-results">Enter search criteria and click Search</div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Card Detail Modal -->
+  <div id="cardModal" class="card-detail-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Card Details</h2>
+        <button class="close-btn" onclick="closeModal()">&times;</button>
+      </div>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
+  <script src="assets/api.js"></script>
+  <script>
+    // Check authentication
+    if (!sessionStorage.getItem('adminLoggedIn')) {
+      window.location.href = 'admin-login.html';
+    }
+    
+    document.getElementById('adminUsername').textContent = 
+      'Logged in as: ' + (sessionStorage.getItem('adminUser') || 'Admin');
+
+    const searchBtn = document.getElementById('searchBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const searchQuery = document.getElementById('searchQuery');
+    const searchType = document.getElementById('searchType');
+    const resultsContainer = document.getElementById('resultsContainer');
+    const resultCount = document.getElementById('resultCount');
+    
+    // Logout
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      sessionStorage.clear();
+      window.location.href = 'admin-login.html';
+    });
+
+    // Search functionality
+    searchBtn.addEventListener('click', performSearch);
+    searchQuery.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') performSearch();
+    });
+    
+    clearBtn.addEventListener('click', () => {
+      searchQuery.value = '';
+      resultsContainer.innerHTML = '<div class="no-results">Enter search criteria and click Search</div>';
+      resultCount.textContent = '0';
+    });
+
+    async function performSearch() {
+      const query = searchQuery.value.trim();
+      const type = searchType.value;
+      
+      if (!query) {
+        alert('Please enter a search term');
+        return;
+      }
+      
+      resultsContainer.innerHTML = '<div class="no-results">Searching...</div>';
+      
+      try {
+        const baseUrl = window.PlayCardAPI.getBaseUrl();
+        if (!baseUrl) {
+          alert('Backend URL not configured. Please set it in index.html first.');
+          return;
+        }
+        
+        const response = await fetch(`${baseUrl}/admin/search?type=${type}&query=${encodeURIComponent(query)}`);
+        const data = await response.json();
+        
+        if (data.results && data.results.length > 0) {
+          displayResults(data.results);
+          resultCount.textContent = data.results.length;
+        } else {
+          resultsContainer.innerHTML = '<div class="no-results">No results found</div>';
+          resultCount.textContent = '0';
+        }
+      } catch (err) {
+        resultsContainer.innerHTML = '<div class="no-results">Error: ' + err.message + '</div>';
+        resultCount.textContent = '0';
+      }
+    }
+
+    function displayResults(results) {
+      const table = `
+        <table class="results-table">
+          <thead>
+            <tr>
+              <th>Card ID</th>
+              <th>Player Name</th>
+              <th>Phone</th>
+              <th>Balance</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${results.map(card => `
+              <tr>
+                <td>${card.id || card._id}</td>
+                <td>${card.player?.name || 'Unknown'}</td>
+                <td>${card.player?.phone || '-'}</td>
+                <td>₹ ${card.balance || 0}</td>
+                <td><span class="state">${card.status || 'active'}</span></td>
+                <td>
+                  <button class="btn btn-secondary" style="padding: 6px 12px; height: auto;" 
+                    onclick="viewCard('${card.id || card._id}')">View Details</button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+      resultsContainer.innerHTML = table;
+    }
+
+    async function viewCard(cardId) {
+      try {
+        const card = await window.PlayCardAPI.getCard(cardId);
+        const history = await window.PlayCardAPI.getHistory(cardId);
+        
+        const modalBody = document.getElementById('modalBody');
+        modalBody.innerHTML = `
+          <div class="details" style="margin-bottom: 24px;">
+            <div class="detail-row"><span>Card ID</span><strong>${card.id}</strong></div>
+            <div class="detail-row"><span>Player Name</span><strong>${card.player?.name || 'Unknown'}</strong></div>
+            <div class="detail-row"><span>Phone</span><strong>${card.player?.phone || '-'}</strong></div>
+            <div class="detail-row"><span>Notes</span><strong>${card.player?.notes || '-'}</strong></div>
+            <div class="detail-row"><span>Balance</span><strong>₹ ${card.balance}</strong></div>
+            <div class="detail-row"><span>Status</span><strong class="state">${card.status}</strong></div>
+          </div>
+          
+          <h3 style="margin-bottom: 12px;">Transaction History</h3>
+          <div class="history-timeline">
+            ${history && history.length > 0 ? 
+              history.map(h => `
+                <div class="history-item">
+                  <div class="left">
+                    <div class="title">${h.title}</div>
+                    <div class="meta">${new Date(h.meta).toLocaleString()}</div>
+                  </div>
+                  <div class="amount">${h.amount || ''}</div>
+                </div>
+              `).join('') : 
+              '<p style="color: var(--muted);">No transaction history</p>'
+            }
+          </div>
+        `;
+        
+        document.getElementById('cardModal').style.display = 'block';
+      } catch (err) {
+        alert('Error loading card details: ' + err.message);
+      }
+    }
+
+    function closeModal() {
+      document.getElementById('cardModal').style.display = 'none';
+    }
+    
+    // Close modal on outside click
+    document.getElementById('cardModal').addEventListener('click', (e) => {
+      if (e.target.id === 'cardModal') closeModal();
+    });
+  </script>
+</body>
+</html>

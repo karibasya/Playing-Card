@@ -14,6 +14,9 @@
           <h1>PlayCard System</h1>
           <p class="subtitle">Scan • Manage • Recharge</p>
         </div>
+        <button id="adminBtn" class="btn btn-secondary" style="margin-left: 20px;">
+          ⚙️ Admin
+        </button>
       </div>
       <div class="connection">
         <label for="backendUrl">Backend URL</label>
@@ -56,14 +59,6 @@
               <input id="rechargeAmount" type="number" min="1" step="1" placeholder="100" required />
             </div>
             <button class="btn" type="submit">Recharge</button>
-          </form>
-
-          <form id="deductForm" class="form">
-            <div class="field">
-              <label for="deductAmount">Deduct Amount</label>
-              <input id="deductAmount" type="number" min="1" step="1" placeholder="20" required />
-            </div>
-            <button class="btn btn-danger" type="submit">Deduct</button>
           </form>
         </div>
 

@@ -60,12 +60,6 @@
         body: JSON.stringify({ amount }),
       });
     },
-    async deduct(cardId, amount) {
-      return request(`/cards/${encodeURIComponent(cardId)}/deduct`, {
-        method: "POST",
-        body: JSON.stringify({ amount }),
-      });
-    },
     async updatePlayer(cardId, player) {
       return request(`/cards/${encodeURIComponent(cardId)}/player`, {
         method: "PUT",

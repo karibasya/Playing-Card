@@ -73,18 +73,6 @@ app.post('/cards/:cardId/recharge', async (req, res) => {
   res.json(card.toPublic());
 });
 
-app.post('/cards/:cardId/deduct', async (req, res) => {
-  const { amount } = req.body || {};
-  const value = Number(amount);
-  if (!Number.isFinite(value) || value <= 0) return res.status(400).json({ message: 'Invalid amount' });
-  const card = await getOrCreateCard(req.params.cardId);
-  if (card.balance - value < 0) return res.status(400).json({ message: 'Insufficient balance' });
-  card.balance -= value;
-  const historyItem = pushHistory(card, { title: 'Deduct', amount: `-₹ ${value}` });
-  await card.save();
-  broadcast({ type: 'update', data: { card: card.toPublic(), historyItem } });
-  res.json(card.toPublic());
-});
 
 app.put('/cards/:cardId/player', async (req, res) => {
   const { name, phone, notes } = req.body || {};
@@ -95,6 +83,27 @@ app.put('/cards/:cardId/player', async (req, res) => {
   await card.save();
   broadcast({ type: 'update', data: { card: card.toPublic(), historyItem } });
   res.json(card.toPublic());
+});
+
+// Admin search endpoint
+app.get('/admin/search', async (req, res) => {
+  const { type, query } = req.query;
+  if (!type || !query) return res.status(400).json({ message: 'type and query required' });
+  
+  let searchFilter = {};
+  if (type === 'id') {
+    searchFilter = { _id: new RegExp(query, 'i') };
+  } else if (type === 'name') {
+    searchFilter = { 'player.name': new RegExp(query, 'i') };
+  } else if (type === 'phone') {
+    searchFilter = { 'player.phone': new RegExp(query, 'i') };
+  } else {
+    return res.status(400).json({ message: 'Invalid search type' });
+  }
+  
+  const cards = await Card.find(searchFilter).limit(50).exec();
+  const results = cards.map(c => c.toPublic());
+  res.json({ results, count: results.length });
 });
 
 // Endpoint for ESP32 to push scans via HTTP

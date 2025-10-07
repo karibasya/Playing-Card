@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Login - PlayCard System</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+  <style>
+    .login-container {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .login-box {
+      max-width: 400px;
+      width: 100%;
+      background: linear-gradient(180deg, var(--panel), var(--panel-2));
+      border: 1px solid var(--outline);
+      border-radius: 14px;
+      padding: 32px;
+      box-shadow: var(--shadow);
+    }
+    .login-header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .login-header h1 {
+      margin: 0 0 8px;
+      font-size: 24px;
+    }
+    .login-header p {
+      color: var(--muted);
+      margin: 0;
+    }
+    .login-form {
+      display: grid;
+      gap: 16px;
+    }
+    .error-msg {
+      padding: 12px;
+      background: rgba(255, 91, 110, 0.1);
+      border: 1px solid var(--danger);
+      border-radius: 8px;
+      color: var(--danger);
+      font-size: 14px;
+      display: none;
+    }
+    .error-msg.show {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-box">
+      <div style="text-align: right; margin-bottom: 16px;">
+        <button onclick="window.location.href='index.html'" class="btn btn-ghost" style="padding: 8px 12px; font-size: 12px;">
+          ← Back to Home
+        </button>
+      </div>
+      <div class="login-header">
+        <div class="logo" style="margin: 0 auto 16px; width: 60px; height: 60px; font-size: 32px;">🔐</div>
+        <h1>Admin Login</h1>
+        <p>PlayCard System</p>
+      </div>
+      
+      <div id="errorMsg" class="error-msg"></div>
+      
+      <form id="loginForm" class="login-form">
+        <div class="field">
+          <label for="username">Username</label>
+          <input id="username" type="text" placeholder="Enter username" required autofocus />
+        </div>
+        
+        <div class="field">
+          <label for="password">Password</label>
+          <input id="password" type="password" placeholder="Enter password" required />
+        </div>
+        
+        <button class="btn" type="submit" style="width: 100%; margin-top: 8px;">
+          Login
+        </button>
+      </form>
+      
+      <div style="margin-top: 24px; text-align: center; color: var(--muted); font-size: 12px;">
+        Default: admin / admin123
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('loginForm');
+    const errorMsg = document.getElementById('errorMsg');
+    
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorMsg.classList.remove('show');
+      
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+      
+      // Simple authentication (you can enhance this with backend API)
+      if (username === 'admin' && password === 'admin123') {
+        // Store session
+        sessionStorage.setItem('adminLoggedIn', 'true');
+        sessionStorage.setItem('adminUser', username);
+        // Redirect to admin page
+        window.location.href = 'admin.html';
+      } else {
+        errorMsg.textContent = 'Invalid username or password';
+        errorMsg.classList.add('show');
+      }
+    });
+  </script>
+</body>
+</html>
