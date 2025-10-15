@@ -11,7 +11,7 @@ const char* WIFI_PASS = "niru@1234";
 // Backup hotspot for testing
 const char* HOTSPOT_SSID = "YourPhoneHotspot";
 const char* HOTSPOT_PASS = "hotspot123";
-const char* API_BASE = "http://10.169.177.49:4000"; // Your computer's IP
+const char* API_BASE = "http://10.95.158.49:4000"; // Your computer's IP
 const char* DEVICE_ID = "esp32-rfid-1";
 
 // RC522 Pins (SDA, SCK, MOSI, MISO, RST) — adjust to your wiring
